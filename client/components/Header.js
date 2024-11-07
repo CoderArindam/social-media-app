@@ -1,17 +1,33 @@
-export default function Header() {
+"use client";
+import { useAuth } from "../context/AuthContext";
+import Link from "next/link";
+import { useState } from "react";
+import CreatePostModal from "./CreatePostModal"; // Import the modal component
+
+const Header = () => {
+  const { user, logout } = useAuth();
+  const [isModalOpen, setModalOpen] = useState(false); // State to manage modal
+
   return (
-    <header className="py-4 bg-white shadow-md">
-      <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-2xl font-bold">My Social Media App</h1>
-        <nav>
-          <a
-            href="/posts/new"
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            New Post
-          </a>
-        </nav>
-      </div>
+    <header className="p-4 bg-gray-800 text-white flex justify-between">
+      <Link href="/" className="text-2xl font-bold">
+        MySocialApp
+      </Link>
+      {user ? (
+        <div className="flex space-x-4">
+          <Link href="/feed">Feed</Link>
+          <Link href={`/profile/${user.id}`}>Profile</Link>
+          <button onClick={() => setModalOpen(true)}>Create Post</button>
+          <button onClick={logout}>Logout</button>
+        </div>
+      ) : (
+        <Link href="/login">Login</Link>
+      )}
+      {isModalOpen && (
+        <CreatePostModal closeModal={() => setModalOpen(false)} />
+      )}
     </header>
   );
-}
+};
+
+export default Header;

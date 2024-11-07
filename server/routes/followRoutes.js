@@ -1,9 +1,9 @@
 import express from "express";
 import { followUser } from "../controllers/followController.js";
-import { authenticateToken } from "../middleware/authMiddleware.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/:followedId/follow", authenticateToken, followUser);
+router.post("/:followedId/follow", verifyToken, followUser);
 
 export default router;
