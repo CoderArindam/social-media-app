@@ -1,9 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";
-// import dotenv from "dotenv";
-
-// dotenv.config();
 
 export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
