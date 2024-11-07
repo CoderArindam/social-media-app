@@ -51,10 +51,10 @@ const ProfilePage = ({ params }) => {
         {activeTab === "posts" && <PostGrid posts={posts} />}{" "}
         {/* Show posts from the profile */}
         {activeTab === "followers" && (
-          <FollowerList users={profile.followers} title="Followers" />
+          <FollowerList users={profile?.followers} title="Followers" />
         )}
         {activeTab === "following" && (
-          <FollowerList users={profile.following} title="Following" />
+          <FollowerList users={profile?.following} title="Following" />
         )}
       </div>
     </div>

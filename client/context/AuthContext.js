@@ -48,26 +48,31 @@ export const AuthProvider = ({ children }) => {
 
   // Login function to authenticate user
   const login = async (credentials) => {
+    const { email, password } = credentials;
+
     try {
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({ email, password }),
       });
+
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
 
       const data = await response.json();
 
-      if (response.ok) {
-        setCookie("token", data.token);
-        setUser(data.user);
-        router.push("/feed"); // Redirect to feed after successful login
-      } else {
-        console.error("Login failed:", data.message);
-      }
+      // Set the token and username in cookies after a successful login
+      setCookie("token", data.token); // Save token in cookie
+      setCookie("username", data.user.username); // Save username in cookie
+
+      return data; // Return data containing token and user info
     } catch (error) {
       console.error("Error during login:", error);
+      throw error; // Re-throw error for handling in the component
     }
   };
 

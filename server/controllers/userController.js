@@ -1,40 +1,34 @@
 import db from "../config/db.js";
-
-// Function to follow another user
-
 export const followUser = async (req, res) => {
-  const { userId } = req; // The logged-in user
-  const { followId } = req.body; // The user to be followed
+  const { username } = req.params; // Target username to follow
+  const { followerUsername } = req.body; // Username of the user who wants to follow
 
   // Validate the input data
-  if (!userId || !followId) {
-    return res
-      .status(400)
-      .json({ message: "User ID and Follow ID are required" });
+  if (!username || !followerUsername) {
+    return res.status(400).json({ message: "Both usernames are required" });
   }
 
-  if (userId === followId) {
+  if (username === followerUsername) {
     return res.status(400).json({ message: "You cannot follow yourself" });
   }
 
   try {
-    // Check if the user is already following the target user
+    // Check if already following
     const [existingFollow] = await db.execute(
-      "SELECT * FROM followers WHERE follower_id = ? AND following_id = ?",
-      [userId, followId]
+      "SELECT * FROM followers WHERE follower_username = ? AND following_username = ?",
+      [followerUsername, username]
     );
 
     if (existingFollow.length > 0) {
       return res.status(400).json({ message: "Already following this user" });
     }
 
-    // Insert the follow relationship into the followers table
+    // Insert the follow relationship
     await db.execute(
-      "INSERT INTO followers (follower_id, following_id) VALUES (?, ?)",
-      [userId, followId]
+      "INSERT INTO followers (follower_username, following_username) VALUES (?, ?)",
+      [followerUsername, username]
     );
 
-    // Return a success message
     res.status(201).json({ message: "User followed successfully" });
   } catch (err) {
     console.error("Error in following user:", err);
@@ -42,23 +36,20 @@ export const followUser = async (req, res) => {
   }
 };
 
-// Function to unfollow a user
 export const unfollowUser = async (req, res) => {
-  const { userId } = req;
-  const { unfollowId } = req.body;
+  const { username } = req.params; // Target username to unfollow
+  const { followerUsername } = req.body; // Username of the user who wants to unfollow
 
   // Validate the input data
-  if (!userId || !unfollowId) {
-    return res
-      .status(400)
-      .json({ message: "User ID and Unfollow ID are required" });
+  if (!username || !followerUsername) {
+    return res.status(400).json({ message: "Both usernames are required" });
   }
 
   try {
-    // Delete the follow relationship from the followers table
+    // Delete the follow relationship
     const [result] = await db.execute(
-      "DELETE FROM followers WHERE follower_id = ? AND following_id = ?",
-      [userId, unfollowId]
+      "DELETE FROM followers WHERE follower_username = ? AND following_username = ?",
+      [followerUsername, username]
     );
 
     if (result.affectedRows === 0) {
@@ -73,6 +64,7 @@ export const unfollowUser = async (req, res) => {
     res.status(500).json({ message: "Error in unfollowing user" });
   }
 };
+
 export const getUserProfile = async (req, res) => {
   const { username } = req.params; // Username from the route parameter
   const { userId } = req; // The logged-in user
@@ -87,17 +79,15 @@ export const getUserProfile = async (req, res) => {
     const [profileData] = await db.execute(
       `SELECT 
         u.id, u.username, u.email,
-        (SELECT COUNT(*) FROM followers WHERE following_id = u.id) AS followersCount,
-        (SELECT COUNT(*) FROM followers WHERE follower_id = u.id) AS followingCount,
+        (SELECT COUNT(*) FROM followers WHERE following_username = u.username) AS followersCount,
+        (SELECT COUNT(*) FROM followers WHERE follower_username = u.username) AS followingCount,
         (SELECT COUNT(*) FROM posts WHERE user_id = u.id) AS postCount,
-        (SELECT JSON_ARRAYAGG(JSON_OBJECT('followerId', f.follower_id, 'followerUsername', u2.username)) 
+        (SELECT JSON_ARRAYAGG(JSON_OBJECT('followerUsername', f.follower_username)) 
          FROM followers f 
-         LEFT JOIN users u2 ON f.follower_id = u2.id 
-         WHERE f.following_id = u.id) AS followers,
-        (SELECT JSON_ARRAYAGG(JSON_OBJECT('followingId', f.following_id, 'followingUsername', u2.username)) 
+         WHERE f.following_username = u.username) AS followers,
+        (SELECT JSON_ARRAYAGG(JSON_OBJECT('followingUsername', f.following_username)) 
          FROM followers f 
-         LEFT JOIN users u2 ON f.following_id = u2.id 
-         WHERE f.follower_id = u.id) AS following,
+         WHERE f.follower_username = u.username) AS following,
         p.id AS postId, p.content, p.caption, p.image, p.created_at,
         (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS likeCount,
         (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS commentCount
@@ -123,7 +113,7 @@ export const getUserProfile = async (req, res) => {
 
     // Check if the logged-in user is following the profile
     const isFollowing = followers.some(
-      (follower) => follower.followerId === userId
+      (follower) => follower.followerUsername === userId
     );
 
     // Standardize the posts format

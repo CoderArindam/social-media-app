@@ -1,14 +1,31 @@
 "use client";
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
+import { setCookie } from "@/utils/auth"; // Import the setCookie function
 
 const LoginPage = () => {
   const { login } = useAuth();
   const [credentials, setCredentials] = useState({ email: "", password: "" });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    login(credentials);
+    try {
+      const response = await login(credentials); // Assuming login function returns the response
+
+      if (response && response.token) {
+        console.log("Token:", response.token); // Check token
+        console.log("Username:", response.user.username); // Check username
+
+        // Store the token and username in cookies
+        setCookie("token", response.token);
+        setCookie("username", response.user.username);
+
+        // Redirect to feed or another page
+        window.location.href = "/feed";
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+    }
   };
 
   return (

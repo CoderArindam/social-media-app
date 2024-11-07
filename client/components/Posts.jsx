@@ -59,7 +59,7 @@ const Posts = memo(({ post }) => {
           </h3>
           <p className="text-gray-500 text-sm">{timeAgo}</p>
         </div>
-        <FollowButton userId={username} />
+        <FollowButton username={username} />
       </div>
 
       {/* Post Content Section */}
