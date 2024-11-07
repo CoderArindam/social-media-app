@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext"; // Ensure this is correct
+import { useAuth } from "../../context/AuthContext";
 import Link from "next/link";
 import CreatePostModal from "../modal/CreatePostModal";
 import {
@@ -10,16 +10,22 @@ import {
   FaUser,
   FaSignOutAlt,
 } from "react-icons/fa";
-import Search from "./Search"; // You can modify this Search component accordingly
+import Search from "./Search";
+import { usePathname } from "next/navigation"; // Import usePathname
 
 const AppBar = () => {
   const { user, logout } = useAuth();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const currentRoute = usePathname(); // Get the current route
 
   const toggleSearchBar = () => {
     setIsSearchVisible(!isSearchVisible);
   };
+
+  // Conditional button text and redirection
+  const buttonText = currentRoute === "/register" ? "Login" : "Register";
+  const redirectTo = currentRoute === "/register" ? "/login" : "/register";
 
   return (
     <>
@@ -56,9 +62,10 @@ const AppBar = () => {
               </button>
             </div>
           ) : (
-            <Link href="/login" passHref>
+            // If the user is not logged in, show the Register/Login button
+            <Link href={redirectTo} passHref>
               <button className="text-2xl cursor-pointer hover:text-blue-500">
-                Login
+                {buttonText} {/* Display Register or Login based on route */}
               </button>
             </Link>
           )}
