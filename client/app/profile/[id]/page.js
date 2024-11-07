@@ -2,10 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import axios from "../../../utils/api";
-import ProfileCard from "../../../components/ProfileCard";
-import Tabs from "../../../components/Tabs";
-import PostGrid from "../../../components/PostGrid";
-import FollowerList from "../../../components/FollowerList";
+import ProfileCard from "../../../components/profile/ProfileCard";
+import Tabs from "../../../components/buttons/Tabs.jsx";
+import PostGrid from "../../../components/profile/PostGrid";
+import FollowerList from "../../../components/profile/FollowerList";
 
 const ProfilePage = ({ params }) => {
   const { user } = useAuth();

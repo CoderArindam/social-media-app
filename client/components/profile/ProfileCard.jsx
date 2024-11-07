@@ -1,4 +1,4 @@
-import FollowButton from "./FollowButton";
+import FollowButton from "../buttons/FollowButton";
 
 const ProfileCard = ({ profile, user }) => {
   const defaultAvatar = "/Default-avatar.jpg";

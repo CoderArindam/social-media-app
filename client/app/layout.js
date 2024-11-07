@@ -1,5 +1,5 @@
 import { AuthProvider } from "../context/AuthContext";
-import AppBar from "../components/AppBar.jsx"; // Import the AppBar component
+import AppBar from "../components/layout/AppBar.jsx"; // Import the AppBar component
 import "./globals.css";
 
 export default function RootLayout({ children }) {

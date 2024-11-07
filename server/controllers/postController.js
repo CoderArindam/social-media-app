@@ -92,23 +92,6 @@ export const likePost = async (req, res) => {
   }
 };
 
-export const checkLikedStatus = async (req, res) => {
-  const { userId } = req; // Assuming `userId` is extracted from JWT or session
-  const { postId } = req.params;
-
-  try {
-    const [rows] = await db.execute(
-      "SELECT * FROM likes WHERE user_id = ? AND post_id = ?",
-      [userId, postId]
-    );
-
-    return res.status(200).json({ liked: rows.length > 0 });
-  } catch (err) {
-    console.error("Error checking liked status:", err);
-    res.status(500).json({ message: "Error checking liked status" });
-  }
-};
-
 // Function to comment on a post
 export const commentPost = async (req, res) => {
   const { userId } = req;

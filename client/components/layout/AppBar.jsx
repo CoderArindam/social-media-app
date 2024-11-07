@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext"; // Ensure this is correct
+import { useAuth } from "../../context/AuthContext"; // Ensure this is correct
 import Link from "next/link";
-import CreatePostModal from "./CreatePostModal";
+import CreatePostModal from "../modal/CreatePostModal";
 import {
   FaHome,
   FaSearch,

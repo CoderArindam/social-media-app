@@ -2,8 +2,8 @@
 import React, { useState, memo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
-import LikeButton from "./LikeButton";
-import FollowButton from "./FollowButton";
+import LikeButton from "../buttons/LikeButton";
+import FollowButton from "../buttons/FollowButton";
 import CommentSection from "./CommentSection";
 import { FaRegComment } from "react-icons/fa";
 import { getCookie } from "@/utils/auth"; // Import getCookie
