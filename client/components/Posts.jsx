@@ -1,10 +1,12 @@
+"use client";
 import React, { useState, memo } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { useRouter } from "next/navigation"; // Import useRouter from Next.js
+import { useRouter } from "next/navigation";
 import LikeButton from "./LikeButton";
 import FollowButton from "./FollowButton";
 import CommentSection from "./CommentSection";
 import { FaRegComment } from "react-icons/fa";
+import { getCookie } from "@/utils/auth"; // Import getCookie
 
 const Posts = memo(({ post }) => {
   const {
@@ -26,6 +28,9 @@ const Posts = memo(({ post }) => {
     addSuffix: true,
   });
 
+  // Get the logged-in user's username from cookies
+  const loggedInUsername = getCookie("username");
+
   // Navigate to user's profile on click
   const navigateToProfile = () => {
     router.push(`/profile/${username}`);
@@ -35,7 +40,6 @@ const Posts = memo(({ post }) => {
     <div className="bg-white shadow-md rounded-lg p-6 mb-6 max-w-md mx-auto">
       {/* Header Section: User Info */}
       <div className="flex items-center mb-4 justify-between">
-        {/* Follow Button */}
         <div
           className="w-10 h-10 bg-gray-300 rounded-full overflow-hidden mr-4 cursor-pointer"
           onClick={navigateToProfile} // Navigate when profile picture is clicked
@@ -59,7 +63,8 @@ const Posts = memo(({ post }) => {
           </h3>
           <p className="text-gray-500 text-sm">{timeAgo}</p>
         </div>
-        <FollowButton username={username} />
+        {/* Conditionally render FollowButton only if it's not the user's own post */}
+        {loggedInUsername !== username && <FollowButton username={username} />}
       </div>
 
       {/* Post Content Section */}
