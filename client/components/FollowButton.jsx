@@ -1,12 +1,13 @@
 import React, { useState } from "react";
+import { FaCheck, FaPlus } from "react-icons/fa";
 
-const FollowButton = ({ userId }) => {
+const FollowButton = ({ username }) => {
   const [isFollowing, setIsFollowing] = useState(false);
 
   const handleFollow = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/users/follow/${userId}`,
+        `http://localhost:5000/api/users/follow/${username}`,
         {
           method: "POST",
           headers: {
@@ -29,13 +30,23 @@ const FollowButton = ({ userId }) => {
 
   return (
     <button
-      onClick={handleFollow}
-      className={`py-1 px-4 text-white rounded-lg ${
-        isFollowing ? "bg-gray-500" : "bg-blue-500"
+      onClick={() => handleFollow(username)}
+      className={`flex items-center justify-center gap-1 py-1 px-3 text-sm rounded-md border transition-all duration-200 ${
+        isFollowing
+          ? "border-gray-300 text-gray-600 hover:border-red-500 hover:text-red-500"
+          : "border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
       }`}
       disabled={isFollowing}
     >
-      {isFollowing ? "Following" : "Follow"}
+      {isFollowing ? (
+        <>
+          <FaCheck className="text-xs" /> Following
+        </>
+      ) : (
+        <>
+          <FaPlus className="text-xs" /> Follow
+        </>
+      )}
     </button>
   );
 };

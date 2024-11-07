@@ -44,9 +44,8 @@ const ProfileCard = ({ profile, user }) => {
       {/* Follow Button */}
       {user && profile?.id && user?.id !== profile?.id && (
         <FollowButton
-          userId={profile?.id}
+          username={profile?.username}
           isFollowing={profile?.isFollowing}
-          className="mt-4 md:mt-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gradient-to-l transition-all duration-300"
         />
       )}
     </div>

@@ -5,6 +5,9 @@ import { getCookie, setCookie, removeCookie } from "../utils/auth";
 
 const AuthContext = createContext();
 
+// Public routes that do not require authentication
+const publicRoutes = ["/login", "/register"];
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const router = useRouter();
@@ -14,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     const token = getCookie("token");
 
     if (token) {
-      // If a token is present, attempt to fetch user info
+      // If token exists, try fetching the user data
       fetch("http://localhost:5000/api/auth/me", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -22,51 +25,57 @@ export const AuthProvider = ({ children }) => {
         credentials: "include", // Ensures cookies are sent with requests
       })
         .then((response) => {
-          if (!response.ok) throw new Error("Failed to fetch user");
+          if (!response.ok) {
+            throw new Error("Failed to fetch user");
+          }
           return response.json();
         })
-        .then((data) => setUser(data)) // Set user if authenticated
-        .catch(() => {
-          setUser(null); // Clear user on error
+        .then((data) => setUser(data)) // Successfully set user data
+        .catch((error) => {
+          console.error("Error fetching user:", error);
+          setUser(null);
           if (!publicRoutes.includes(pathname)) {
-            router.push("/login"); // Redirect to login if not on public route
+            router.push("/login"); // Redirect to login if user not fetched and on protected route
           }
         });
     } else {
-      setUser(null); // No token found, set user to null
-
-      // Redirect only if the current route is protected
-      const publicRoutes = ["/login", "/register"];
+      setUser(null); // No token found, clear user
       if (!publicRoutes.includes(pathname)) {
-        router.push("/login");
+        router.push("/login"); // Redirect if route is protected
       }
     }
-  }, [router, pathname]);
+  }, [pathname]); // Depend on pathname only, not router
 
+  // Login function to authenticate user
   const login = async (credentials) => {
-    const response = await fetch("http://localhost:5000/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(credentials),
-    });
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok) {
-      setCookie("token", data.token);
-      setUser(data.user);
-      router.push("/feed");
-    } else {
-      console.error("Login failed:", data.message);
+      if (response.ok) {
+        setCookie("token", data.token);
+        setUser(data.user);
+        router.push("/feed"); // Redirect to feed after successful login
+      } else {
+        console.error("Login failed:", data.message);
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
     }
   };
 
+  // Logout function to clear user session
   const logout = () => {
     removeCookie("token");
     setUser(null);
-    router.push("/login");
+    router.push("/login"); // Redirect to login after logout
   };
 
   return (
@@ -76,4 +85,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// Custom hook to use Auth context
 export const useAuth = () => useContext(AuthContext);

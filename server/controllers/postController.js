@@ -39,12 +39,10 @@ export const createPost = async (req, res) => {
 };
 
 // Function to like a post
-
 export const likePost = async (req, res) => {
-  const { userId } = req; // Assuming `userId` is attached via a middleware or JWT
+  const { userId } = req;
   const { postId } = req.body;
 
-  // Validate that userId and postId are present
   if (!userId || !postId) {
     return res
       .status(400)
@@ -58,24 +56,56 @@ export const likePost = async (req, res) => {
       [userId, postId]
     );
 
+    let likeCount = 0;
+
     if (likeExists.length > 0) {
       // If like exists, remove it (unlike)
       await db.execute("DELETE FROM likes WHERE user_id = ? AND post_id = ?", [
         userId,
         postId,
       ]);
-      return res.status(200).json({ message: "Post unliked" });
+      likeCount = likeExists.length - 1; // Decrease like count
     } else {
       // If like does not exist, add it (like)
       await db.execute("INSERT INTO likes (user_id, post_id) VALUES (?, ?)", [
         userId,
         postId,
       ]);
-      return res.status(200).json({ message: "Post liked" });
+      likeCount = likeExists.length + 1; // Increase like count
     }
+
+    // Get the updated liked status
+    const [updatedLikeStatus] = await db.execute(
+      "SELECT * FROM likes WHERE user_id = ? AND post_id = ?",
+      [userId, postId]
+    );
+    const liked = updatedLikeStatus.length > 0;
+
+    res.status(200).json({
+      message: liked ? "Post liked" : "Post unliked",
+      liked,
+      likeCount, // Include updated like count
+    });
   } catch (err) {
     console.error("Error in liking/unliking post:", err);
     res.status(500).json({ message: "Error in liking/unliking post" });
+  }
+};
+
+export const checkLikedStatus = async (req, res) => {
+  const { userId } = req; // Assuming `userId` is extracted from JWT or session
+  const { postId } = req.params;
+
+  try {
+    const [rows] = await db.execute(
+      "SELECT * FROM likes WHERE user_id = ? AND post_id = ?",
+      [userId, postId]
+    );
+
+    return res.status(200).json({ liked: rows.length > 0 });
+  } catch (err) {
+    console.error("Error checking liked status:", err);
+    res.status(500).json({ message: "Error checking liked status" });
   }
 };
 
@@ -98,15 +128,41 @@ export const commentPost = async (req, res) => {
       [userId, postId, comment]
     );
 
-    // Send response with success message and the new comment ID
-    res
-      .status(201)
-      .json({ message: "Comment added", commentId: result.insertId });
+    // Retrieve the newly inserted comment along with user information
+    const [newComment] = await db.execute(
+      "SELECT c.id AS commentId, c.comment, u.username FROM comments c LEFT JOIN users u ON c.user_id = u.id WHERE c.id = ?",
+      [result.insertId]
+    );
+
+    // Send response with success message and the new comment data
+    res.status(201).json({
+      message: "Comment added",
+      comment: newComment[0], // The newly added comment
+    });
   } catch (err) {
     console.error("Error in commenting:", err);
     res.status(500).json({ message: "Error in commenting" });
   }
 };
+
+export const getComments = async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    // Fetch the comments for the given post
+    const [comments] = await db.execute(
+      "SELECT c.id AS commentId, c.comment, u.username FROM comments c LEFT JOIN users u ON c.user_id = u.id WHERE c.post_id = ?",
+      [postId]
+    );
+
+    // Send the comments to the client
+    res.status(200).json({ comments });
+  } catch (err) {
+    console.error("Error in fetching comments:", err);
+    res.status(500).json({ message: "Error in fetching comments" });
+  }
+};
+
 export const getFeed = async (req, res) => {
   const { userId } = req; // Logged-in user's ID
 

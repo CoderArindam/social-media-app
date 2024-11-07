@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import Posts from "../../components/Posts";
+import Posts from "../../components/Posts.jsx";
 import { getCookie } from "@/utils/auth";
 
 const FeedPage = () => {
