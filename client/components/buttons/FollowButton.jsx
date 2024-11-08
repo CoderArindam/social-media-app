@@ -64,10 +64,10 @@ const FollowButton = ({ username }) => {
   return (
     <button
       onClick={isFollowing ? handleUnfollow : handleFollow}
-      className={`flex items-center justify-center gap-1 py-1 px-3 text-sm rounded-md border transition-all duration-200 w-full mt-8 ${
+      className={`flex items-center justify-center gap-1 py-1 px-3 text-sm rounded-md border transition-all duration-200 ${
         isFollowing
           ? "border-gray-300 text-gray-600 hover:border-red-500 hover:text-red-500"
-          : "border-white text-white hover:bg-blue-500 hover:text-white"
+          : "border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
       }`}
     >
       {isFollowing ? (

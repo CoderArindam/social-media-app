@@ -1,4 +1,5 @@
-Social Media App
+Social Media WebApp (Mobile First Approach)
+
 This repository contains a simple social media application with a MySQL database backend. Follow the steps below to set up the project and get it running locally.
 
 Prerequisites
