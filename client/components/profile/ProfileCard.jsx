@@ -4,9 +4,9 @@ const ProfileCard = ({ profile, user }) => {
   const defaultAvatar = "/Default-avatar.jpg";
 
   return (
-    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg rounded-3xl p-8 mb-8 flex flex-col md:flex-row md:items-center md:justify-between transition-all duration-500 ease-in-out transform hover:scale-105">
+    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg rounded-3xl p-8 mb-8 flex flex-col md:flex-row md:items-center md:justify-center transition-all duration-500 ease-in-out transform hover:scale-105">
       {/* Profile Information */}
-      <div className="flex flex-col items-center md:items-start mb-6 md:mb-0">
+      <div className="flex flex-col items-center md:items-center mb-6 md:mb-0">
         {/* Profile Picture */}
         <div className="w-32 h-32 md:w-40 md:h-40 bg-gray-300 rounded-full overflow-hidden mb-4 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-110 hover:shadow-2xl">
           <img
@@ -46,16 +46,16 @@ const ProfileCard = ({ profile, user }) => {
             <span className="text-sm">Following</span>
           </div>
         </div>
+        {user && profile?.id && user?.id !== profile?.id && (
+          <FollowButton
+            username={profile?.username}
+            isFollowing={profile?.isFollowing}
+            className="mt-4 md:mt-3"
+          />
+        )}
       </div>
 
       {/* Follow Button */}
-      {user && profile?.id && user?.id !== profile?.id && (
-        <FollowButton
-          username={profile?.username}
-          isFollowing={profile?.isFollowing}
-          className="mt-4 md:mt-0"
-        />
-      )}
     </div>
   );
 };

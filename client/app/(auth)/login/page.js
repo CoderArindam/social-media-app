@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
-import { setCookie } from "@/utils/auth"; // Import the setCookie function
+import { setCookie } from "@/utils/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { toast } from "react-hot-toast";
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -14,18 +15,18 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await login(credentials); // Assuming login function returns the response
+      const response = await login(credentials);
 
       if (response && response.token) {
-        // Store the token and username in cookies
         setCookie("token", response.token);
         setCookie("username", response.user.username);
-
-        // Redirect to feed or another page
+        toast.success("Login successful!");
         window.location.href = "/feed";
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      toast.error(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
     }
   };
 

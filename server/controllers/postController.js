@@ -34,7 +34,9 @@ export const createPost = async (req, res) => {
   } catch (error) {
     // Log the error for debugging
     console.error("Error creating post:", error);
-    res.status(500).json({ message: "Error creating post" });
+    res
+      .status(500)
+      .json({ message: "Error creating post", error: error.message });
   }
 };
 
@@ -88,7 +90,9 @@ export const likePost = async (req, res) => {
     });
   } catch (err) {
     console.error("Error in liking/unliking post:", err);
-    res.status(500).json({ message: "Error in liking/unliking post" });
+    res
+      .status(500)
+      .json({ message: "Error in liking/unliking post", error: err.message });
   }
 };
 
@@ -124,10 +128,13 @@ export const commentPost = async (req, res) => {
     });
   } catch (err) {
     console.error("Error in commenting:", err);
-    res.status(500).json({ message: "Error in commenting" });
+    res
+      .status(500)
+      .json({ message: "Error in commenting", error: err.message });
   }
 };
 
+// Function to fetch comments for a post
 export const getComments = async (req, res) => {
   const { postId } = req.params;
 
@@ -142,10 +149,13 @@ export const getComments = async (req, res) => {
     res.status(200).json({ comments });
   } catch (err) {
     console.error("Error in fetching comments:", err);
-    res.status(500).json({ message: "Error in fetching comments" });
+    res
+      .status(500)
+      .json({ message: "Error in fetching comments", error: err.message });
   }
 };
 
+// Function to get the feed (all posts)
 export const getFeed = async (req, res) => {
   const { userId } = req; // Logged-in user's ID
 
@@ -186,6 +196,8 @@ export const getFeed = async (req, res) => {
     res.json(posts);
   } catch (err) {
     console.error("Error fetching posts:", err);
-    res.status(500).json({ message: "Error fetching posts" });
+    res
+      .status(500)
+      .json({ message: "Error fetching posts", error: err.message });
   }
 };

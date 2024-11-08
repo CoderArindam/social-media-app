@@ -45,13 +45,9 @@ const Posts = memo(({ post }) => {
           onClick={navigateToProfile} // Navigate when profile picture is clicked
         >
           <img
-            src={`/profile-pictures/${username}.jpg`}
+            src="/Default-avatar.jpg"
             alt={username}
             className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "/Default-avatar.jpg";
-            }}
           />
         </div>
         <div>

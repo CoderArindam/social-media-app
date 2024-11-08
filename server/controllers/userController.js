@@ -1,9 +1,15 @@
 import db from "../config/db.js";
-export const followUser = async (req, res) => {
-  const { username } = req.params; // Target username to follow
-  const { followerUsername } = req.body; // Username of the user who wants to follow
 
-  // Validate the input data
+// Helper function to handle errors
+const handleError = (res, error, message, statusCode = 500) => {
+  console.error(message, error);
+  return res.status(statusCode).json({ message });
+};
+
+export const followUser = async (req, res) => {
+  const { username } = req.params;
+  const { followerUsername } = req.body;
+
   if (!username || !followerUsername) {
     return res.status(400).json({ message: "Both usernames are required" });
   }
@@ -13,7 +19,6 @@ export const followUser = async (req, res) => {
   }
 
   try {
-    // Check if already following
     const [existingFollow] = await db.execute(
       "SELECT * FROM followers WHERE follower_username = ? AND following_username = ?",
       [followerUsername, username]
@@ -23,7 +28,6 @@ export const followUser = async (req, res) => {
       return res.status(400).json({ message: "Already following this user" });
     }
 
-    // Insert the follow relationship
     await db.execute(
       "INSERT INTO followers (follower_username, following_username) VALUES (?, ?)",
       [followerUsername, username]
@@ -31,22 +35,19 @@ export const followUser = async (req, res) => {
 
     res.status(201).json({ message: "User followed successfully" });
   } catch (err) {
-    console.error("Error in following user:", err);
-    res.status(500).json({ message: "Error in following user" });
+    handleError(res, err, "Error in following user");
   }
 };
 
 export const unfollowUser = async (req, res) => {
-  const { username } = req.params; // Target username to unfollow
-  const { followerUsername } = req.body; // Username of the user who wants to unfollow
+  const { username } = req.params;
+  const { followerUsername } = req.body;
 
-  // Validate the input data
   if (!username || !followerUsername) {
     return res.status(400).json({ message: "Both usernames are required" });
   }
 
   try {
-    // Delete the follow relationship
     const [result] = await db.execute(
       "DELETE FROM followers WHERE follower_username = ? AND following_username = ?",
       [followerUsername, username]
@@ -60,22 +61,19 @@ export const unfollowUser = async (req, res) => {
 
     res.status(200).json({ message: "User unfollowed successfully" });
   } catch (err) {
-    console.error("Error in unfollowing user:", err);
-    res.status(500).json({ message: "Error in unfollowing user" });
+    handleError(res, err, "Error in unfollowing user");
   }
 };
 
 export const getUserProfile = async (req, res) => {
-  const { username } = req.params; // Username from the route parameter
-  const { userId } = req; // The logged-in user
+  const { username } = req.params;
+  const { userId } = req;
 
-  // Validate the username
   if (!username) {
     return res.status(400).json({ message: "Username is required" });
   }
 
   try {
-    // Fetch the user profile details based on username, including posts and followers/following info
     const [profileData] = await db.execute(
       `SELECT 
         u.id, u.username, u.email,
@@ -105,32 +103,24 @@ export const getUserProfile = async (req, res) => {
     }
 
     const profile = profileData[0];
-
-    // Safely handle null or undefined followers and following fields
     const followers = profile.followers || [];
     const following = profile.following || [];
 
-    // Check if the logged-in user is following the profile
     const isFollowing = followers.some(
       (follower) => follower.followerUsername === userId
     );
 
-    // Standardize the posts format
-    const posts = profileData.map((post) => {
-      const createdAt = new Date(post.created_at); // Convert to Date object
-
-      return {
-        postId: post.postId,
-        content: post.content,
-        caption: post.caption,
-        image: post.image,
-        created_at: createdAt.toISOString(), // Convert to ISO string format (e.g., '2024-11-07T13:45:30.000Z')
-        likeCount: post.likeCount,
-        commentCount: post.commentCount,
-        username: profile.username, // Same username for all posts by this user
-        comments: [], // Comments can be fetched separately if needed
-      };
-    });
+    const posts = profileData.map((post) => ({
+      postId: post.postId,
+      content: post.content,
+      caption: post.caption,
+      image: post.image,
+      created_at: new Date(post.created_at).toISOString(),
+      likeCount: post.likeCount,
+      commentCount: post.commentCount,
+      username: profile.username,
+      comments: [],
+    }));
 
     res.json({
       id: profile.id,
@@ -145,12 +135,10 @@ export const getUserProfile = async (req, res) => {
       posts,
     });
   } catch (err) {
-    console.error("Error fetching user profile:", err);
-    res.status(500).json({ message: "Error fetching user profile" });
+    handleError(res, err, "Error fetching user profile");
   }
 };
 
-// Search Users Controller
 export const searchUsers = async (req, res) => {
   const { query } = req.query;
 
@@ -166,7 +154,6 @@ export const searchUsers = async (req, res) => {
 
     res.status(200).json(results);
   } catch (error) {
-    console.error("Error searching users:", error);
-    res.status(500).json({ message: "Error searching users" });
+    handleError(res, error, "Error searching users");
   }
 };

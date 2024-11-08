@@ -97,7 +97,7 @@ const CommentSection = ({ postId, onCommentCountUpdate }) => {
               >
                 <div className="w-8 h-8 bg-gray-300 rounded-full overflow-hidden">
                   <img
-                    src={`/profile-pictures/${comment.username}.jpg`} // Assuming profile images are stored this way
+                    src="/Default-avatar.jpg"
                     alt={comment.username}
                     className="w-full h-full object-cover"
                     onError={(e) => {

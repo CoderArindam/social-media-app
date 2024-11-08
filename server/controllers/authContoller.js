@@ -1,105 +1,103 @@
-import jwt from "jsonwebtoken"; // To verify the token
+import jwt from "jsonwebtoken";
 import db from "../config/db.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/generateToken.js";
 
-// Helper to get the token from cookies
-const getTokenFromCookies = (req) => {
-  const token = req.cookies.token;
-  return token;
-};
+const getTokenFromCookies = (req) => req.cookies.token;
 
 export const signup = async (req, res) => {
   const { username, email, password } = req.body;
 
-  try {
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const sql =
-      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
-    const [result] = await db.execute(sql, [username, email, hashedPassword]);
+  if (!username || !email || !password) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
 
-    // Respond with success message and user ID
+  try {
+    const [existingUser] = await db.execute(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+    if (existingUser.length > 0) {
+      return res.status(409).json({ message: "Email already registered." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await db.execute(
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+      [username, email, hashedPassword]
+    );
+
     res.status(201).json({
       message: "User registered successfully",
       userId: result.insertId,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error in signup" });
+    console.error("Signup error:", err);
+    res
+      .status(500)
+      .json({ message: "Error registering user. Please try again later." });
   }
 };
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  try {
-    // Check if the user exists by email
-    const sql = "SELECT * FROM users WHERE email = ?";
-    const [results] = await db.execute(sql, [email]);
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json({ message: "Email and password are required." });
+  }
 
-    // If no user found, send an error
+  try {
+    const [results] = await db.execute("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]);
     if (results.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found." });
     }
 
     const user = results[0];
-
-    // Compare the hashed password with the input password
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
-      return res.status(401).json({ message: "Incorrect password" });
+      return res.status(401).json({ message: "Incorrect password." });
     }
 
-    // Generate JWT token for the user
     const token = generateToken(user.id);
-
-    // Set token in cookies (HTTP Only) and return username, email, and token in response
     res.cookie("token", token, { httpOnly: true }).json({
       token,
-      user: {
-        id: user.id,
-        username: user.username, // Include username in the response
-        email: user.email,
-      },
+      user: { id: user.id, username: user.username, email: user.email },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error in login" });
+    console.error("Login error:", err);
+    res
+      .status(500)
+      .json({ message: "Error logging in. Please try again later." });
   }
 };
 
-// The 'me' function to get the user details from the token
 export const me = (req, res) => {
   const token = getTokenFromCookies(req);
 
-  // If token is not found, return an error
   if (!token) {
-    return res.status(403).json({ message: "No token provided" });
+    return res.status(403).json({ message: "No token provided." });
   }
 
   try {
-    // Verify the token using JWT secret key
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Retrieve user details from the database
     const sql = "SELECT id, username, email FROM users WHERE id = ?";
     db.execute(sql, [decoded.id])
       .then(([results]) => {
-        // If no user found with the decoded ID, return an error
         if (results.length === 0) {
-          return res.status(404).json({ message: "User not found" });
+          return res.status(404).json({ message: "User not found." });
         }
-
-        // Send back the user data (id, username, email)
         res.status(200).json(results[0]);
       })
       .catch((err) => {
-        console.error(err);
-        res.status(500).json({ message: "Error fetching user" });
+        console.error("Fetch user error:", err);
+        res.status(500).json({ message: "Error fetching user data." });
       });
   } catch (err) {
-    console.error("Invalid token", err);
-    res.status(403).json({ message: "Invalid token" });
+    console.error("Invalid token:", err);
+    res.status(403).json({ message: "Invalid token." });
   }
 };

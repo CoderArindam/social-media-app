@@ -41,9 +41,7 @@ const Register = () => {
     try {
       const response = await fetch("http://localhost:5000/api/auth/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
@@ -56,8 +54,9 @@ const Register = () => {
       }
     } catch (error) {
       toast.error("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
