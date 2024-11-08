@@ -14,8 +14,6 @@ const FollowButton = ({ username }) => {
         return; // Exit if no username found in cookies
       }
 
-      console.log("Follower Username:", followerUsername); // Check if the username is retrieved correctly
-
       const response = await fetch(
         `http://localhost:5000/api/user/follow/${username}`,
         {

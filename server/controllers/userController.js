@@ -105,7 +105,6 @@ export const getUserProfile = async (req, res) => {
     }
 
     const profile = profileData[0];
-    console.log(profile);
 
     // Safely handle null or undefined followers and following fields
     const followers = profile.followers || [];
