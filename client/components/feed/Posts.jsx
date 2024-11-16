@@ -8,7 +8,7 @@ import CommentSection from "./CommentSection";
 import { FaRegComment } from "react-icons/fa";
 import { getCookie } from "@/utils/auth"; // Import getCookie
 
-const Posts = memo(({ post }) => {
+const Posts = memo(({ post, liked, isFollowing }) => {
   const {
     postId,
     content,
@@ -60,7 +60,9 @@ const Posts = memo(({ post }) => {
           <p className="text-gray-500 text-sm">{timeAgo}</p>
         </div>
         {/* Conditionally render FollowButton only if it's not the user's own post */}
-        {loggedInUsername !== username && <FollowButton username={username} />}
+        {loggedInUsername !== username && (
+          <FollowButton username={username} isFollowing={isFollowing} />
+        )}
       </div>
 
       {/* Post Content Section */}
@@ -87,8 +89,9 @@ const Posts = memo(({ post }) => {
             postId={postId}
             initialLikeCount={updatedLikeCount}
             onLikeCountUpdate={setUpdatedLikeCount}
+            liked={liked}
           />
-          <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition">
+          <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition text-xl">
             <FaRegComment />
             <span>{updatedCommentCount}</span>
           </button>

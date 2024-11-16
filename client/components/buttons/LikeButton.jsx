@@ -3,9 +3,14 @@ import { useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import axios from "axios";
 
-const LikeButton = ({ postId, initialLikeCount, onLikeCountUpdate }) => {
+const LikeButton = ({
+  postId,
+  initialLikeCount,
+  onLikeCountUpdate,
+  liked: initialLikedStatus,
+}) => {
   const [likes, setLikes] = useState(initialLikeCount);
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(initialLikedStatus);
 
   const handleLike = async () => {
     try {
@@ -17,12 +22,14 @@ const LikeButton = ({ postId, initialLikeCount, onLikeCountUpdate }) => {
 
       if (response.data.message === "Post liked") {
         setLiked(true);
-        setLikes(likes + 1);
-        onLikeCountUpdate(likes + 1); // Update the parent component's like count
+        const updatedLikes = likes + 1;
+        setLikes(updatedLikes);
+        onLikeCountUpdate(updatedLikes); // Update parent component's like count
       } else {
         setLiked(false);
-        setLikes(likes - 1);
-        onLikeCountUpdate(likes - 1); // Update the parent component's like count
+        const updatedLikes = likes - 1;
+        setLikes(updatedLikes);
+        onLikeCountUpdate(updatedLikes); // Update parent component's like count
       }
     } catch (err) {
       console.error("Error liking/unliking post:", err);
@@ -35,9 +42,9 @@ const LikeButton = ({ postId, initialLikeCount, onLikeCountUpdate }) => {
       className="flex items-center space-x-2 text-gray-700 hover:text-red-500 transition"
     >
       {liked ? (
-        <FaHeart className="text-red-500" />
+        <FaHeart className="text-red-500 text-xl" />
       ) : (
-        <FaRegHeart className="text-gray-700" />
+        <FaRegHeart className="text-gray-700 text-xl" />
       )}
       <span>{likes}</span>
     </button>

@@ -4,11 +4,13 @@ import { useAuth } from "../../../context/AuthContext";
 import { setCookie } from "@/utils/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
   const { login } = useAuth();
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -18,10 +20,8 @@ const LoginPage = () => {
       const response = await login(credentials);
 
       if (response && response.token) {
-        setCookie("token", response.token);
-        setCookie("username", response.user.username);
         toast.success("Login successful!");
-        window.location.href = "/feed";
+        router.push("/");
       }
     } catch (error) {
       toast.error(

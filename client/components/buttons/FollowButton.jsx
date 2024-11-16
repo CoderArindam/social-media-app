@@ -2,8 +2,8 @@ import { getCookie } from "@/utils/auth"; // Import getCookie to retrieve the us
 import React, { useState } from "react";
 import { FaCheck, FaPlus } from "react-icons/fa";
 
-const FollowButton = ({ username }) => {
-  const [isFollowing, setIsFollowing] = useState(false);
+const FollowButton = ({ username, isFollowing: initialIsFollowing }) => {
+  const [isFollowing, setIsFollowing] = useState(initialIsFollowing); // Set initial state to the prop value
 
   const handleFollow = async () => {
     try {
@@ -31,7 +31,7 @@ const FollowButton = ({ username }) => {
         throw new Error("Error following user");
       }
 
-      setIsFollowing(true);
+      setIsFollowing(true); // Update state after successful follow
     } catch (error) {
       console.error("Error following user:", error);
     }
@@ -40,7 +40,7 @@ const FollowButton = ({ username }) => {
   const handleUnfollow = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/users/unfollow/${username}`,
+        `http://localhost:5000/api/user/unfollow/${username}`,
         {
           method: "POST",
           headers: {
@@ -55,7 +55,7 @@ const FollowButton = ({ username }) => {
         throw new Error("Error unfollowing user");
       }
 
-      setIsFollowing(false);
+      setIsFollowing(false); // Update state after successful unfollow
     } catch (error) {
       console.error("Error unfollowing user:", error);
     }

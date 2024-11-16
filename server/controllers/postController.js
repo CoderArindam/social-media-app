@@ -96,6 +96,45 @@ export const likePost = async (req, res) => {
   }
 };
 
+//function to check liked status
+
+// Function to check liked status
+export const checkLikedStatus = async (req, res) => {
+  const { userId } = req; // Logged-in user's ID
+  const { postId } = req.body; // Post ID to check
+
+  console.log(req);
+
+  if (!userId || !postId) {
+    return res
+      .status(400)
+      .json({ message: "User ID and Post ID are required" });
+  }
+
+  try {
+    // Check if a like entry exists for this user and post
+    const [likeStatus] = await db.execute(
+      "SELECT * FROM likes WHERE user_id = ? AND post_id = ?",
+      [userId, postId]
+    );
+
+    // Determine if the post is liked by the user
+    const liked = likeStatus.length > 0;
+
+    res.status(200).json({
+      liked,
+      message: liked
+        ? "Post is liked by the user"
+        : "Post is not liked by the user",
+    });
+  } catch (error) {
+    console.error("Error checking liked status:", error);
+    res
+      .status(500)
+      .json({ message: "Error checking liked status", error: error.message });
+  }
+};
+
 // Function to comment on a post
 export const commentPost = async (req, res) => {
   const { userId } = req;
@@ -157,41 +196,60 @@ export const getComments = async (req, res) => {
 
 // Function to get the feed (all posts)
 export const getFeed = async (req, res) => {
-  const { userId } = req; // Logged-in user's ID
+  const { userId } = req; // Logged-in user's ID from auth middleware
+  const { username } = req.body; // Username from request body
 
-  if (!userId) {
-    return res.status(400).json({ message: "User ID is required" });
+  if (!userId || !username) {
+    return res
+      .status(400)
+      .json({ message: "User ID and username are required" });
   }
 
-  // Modified SQL query to get all posts from all users (removing any filters by follower status)
   const sql = `
     SELECT p.id AS postId, p.content, p.image, p.caption, u.username, p.created_at,
            (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS likeCount,
-           (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS commentCount
+           (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS commentCount,
+           EXISTS (SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) AS liked,
+           EXISTS (SELECT 1 FROM followers WHERE follower_username = ? AND following_username = u.username) AS isFollowing
     FROM posts p
     JOIN users u ON u.id = p.user_id
     ORDER BY p.created_at DESC
   `;
 
   try {
-    const [results] = await db.execute(sql);
+    const [postResults] = await db.execute(sql, [userId, username]);
 
-    if (results.length === 0) {
-      return res.json({ message: "No posts found" });
-    }
+    const posts = await Promise.all(
+      postResults.map(async (post) => {
+        const [comments] = await db.execute(
+          `SELECT c.id AS commentId, c.comment, c.created_at, u.username
+           FROM comments c
+           JOIN users u ON c.user_id = u.id
+           WHERE c.post_id = ?
+           ORDER BY c.created_at ASC`,
+          [post.postId]
+        );
 
-    // Standardizing the response format for posts
-    const posts = results.map((post) => ({
-      postId: post.postId,
-      content: post.content,
-      caption: post.caption,
-      image: post.image,
-      created_at: post.created_at,
-      likeCount: post.likeCount,
-      commentCount: post.commentCount,
-      username: post.username,
-      comments: [], // Comments are not being returned here, we can add them later if needed
-    }));
+        return {
+          postId: post.postId,
+          content: post.content,
+          caption: post.caption,
+          image: post.image,
+          created_at: post.created_at,
+          likeCount: post.likeCount,
+          commentCount: post.commentCount,
+          username: post.username,
+          liked: Boolean(post.liked),
+          isFollowing: Boolean(post.isFollowing),
+          comments: comments.map((comment) => ({
+            commentId: comment.commentId,
+            comment: comment.comment,
+            created_at: comment.created_at,
+            username: comment.username,
+          })),
+        };
+      })
+    );
 
     res.json(posts);
   } catch (err) {

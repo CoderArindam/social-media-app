@@ -5,6 +5,7 @@ import {
   commentPost,
   getFeed,
   getComments,
+  checkLikedStatus,
 } from "../controllers/postController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
@@ -15,7 +16,7 @@ router.post("/like", verifyToken, likePost);
 
 router.post("/comment", verifyToken, commentPost);
 router.get("/:postId/comments", verifyToken, getComments);
-
-router.get("/feed", verifyToken, getFeed);
+router.get("/check-liked-status", verifyToken, checkLikedStatus);
+router.post("/feed", verifyToken, getFeed);
 
 export default router;

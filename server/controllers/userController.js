@@ -42,6 +42,7 @@ export const followUser = async (req, res) => {
 export const unfollowUser = async (req, res) => {
   const { username } = req.params;
   const { followerUsername } = req.body;
+  console.log(followerUsername);
 
   if (!username || !followerUsername) {
     return res.status(400).json({ message: "Both usernames are required" });
